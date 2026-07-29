@@ -1,0 +1,34 @@
+{% extends "portal/base.html" %}
+{% block title %}Dashboard — PowerBI links portal{% endblock %}
+{% block content %}
+<h1 style="font-size:1.4rem; margin:0 0 4px 0;">Welcome, {{ user.get_full_name|default:user.username }}</h1>
+<p style="color:var(--muted); margin:0 0 24px 0; font-size:0.9rem;">Click the button below to redirect to your link.</p>
+
+{% for category, store_groups in grouped_links %}
+<h2 style="font-size:1rem; margin:0 0 12px 0;">{{ category.name }}</h2>
+
+<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px;">
+    {% for group in store_groups %}
+    {% for link in group.links %}
+    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-tile">
+        <span class="icon">{{ category.name }}</span>
+        <span class="title">{{ link.title }}</span>
+        <span class="badge">{{ group.store.name|default:"General" }}</span>
+    </a>
+    {% endfor %}
+    {% endfor %}
+</div>
+{% empty %}
+<div class="card" style="padding:32px; text-align:center; color:var(--muted);">
+    You are not assigned to any category yet, or no links have been assigned. Contact your administrator.
+</div>
+{% endfor %}
+
+{% if is_paginated %}
+<div style="margin-top:8px; display:flex; gap:8px; justify-content:center;">
+    {% if page_obj.has_previous %}<a class="btn" href="?page={{ page_obj.previous_page_number }}">Previous</a>{% endif %}
+    <span style="align-self:center; color:var(--muted); font-size:0.85rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    {% if page_obj.has_next %}<a class="btn" href="?page={{ page_obj.next_page_number }}">Next</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
