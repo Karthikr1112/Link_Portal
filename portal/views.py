@@ -10,7 +10,7 @@ from .models import Category, Link
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "portal/dashboard.html"
-    paginate_by = 25
+    paginate_by = 100
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

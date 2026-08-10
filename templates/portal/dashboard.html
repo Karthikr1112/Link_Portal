@@ -5,14 +5,14 @@
 <p style="color:var(--muted); margin:0 0 24px 0; font-size:0.9rem;">Click the button below to redirect to your link.</p>
 
 {% for category, store_groups in grouped_links %}
-<h2 style="font-size:1rem; margin:0 0 12px 0;">{{ category.name }}</h2>
+<h2 style="font-size:1rem; margin:0 0 12px 0;">category - {{ category.name }}</h2>
 
-<div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:28px;">
+<div class="dashboard-tiles">
     {% for group in store_groups %}
     {% for link in group.links %}
     <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer" class="link-tile">
         <span class="icon">{{ category.name }}</span>
-        <span class="title">{{ link.title }}</span>
+        <span class="title" title="{{ link.title }}">{{ link.title }}</span>
         <span class="badge">{{ group.store.name|default:"General" }}</span>
     </a>
     {% endfor %}

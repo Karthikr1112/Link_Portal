@@ -35,7 +35,15 @@
         .topbar .user-info { display: flex; align-items: center; gap: 14px; font-size: 0.9rem; }
         .topbar a { color: #fff; text-decoration: none; opacity: 0.9; }
         .topbar a:hover { opacity: 1; text-decoration: underline; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+        .container { max-width: 1240px; margin: 0 auto; padding: 28px 24px; }
+        .dashboard-tiles {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            justify-items: center;
+            gap: 20px;
+            row-gap: 36px;
+            margin-bottom: 36px;
+        }
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -74,42 +82,166 @@
             flex-direction: column;
             align-items: center;
             gap: 12px;
-            width: 160px;
+            width: 100%;
+            max-width: 180px;
             text-decoration: none;
         }
+        /* 10 Unique Color Palettes */
+        /* 1. Coral Red */
+        .link-tile:nth-child(10n+1) {
+            --ring-c1: rgba(255, 82, 114, 0.48);
+            --ring-c2: rgba(255, 82, 114, 0.36);
+            --ring-c3: rgba(255, 82, 114, 0.25);
+            --ring-bubble: rgba(255, 82, 114, 0.65);
+            --ring-text: #d90429;
+        }
+        /* 2. Sky Blue */
+        .link-tile:nth-child(10n+2) {
+            --ring-c1: rgba(56, 161, 243, 0.48);
+            --ring-c2: rgba(56, 161, 243, 0.36);
+            --ring-c3: rgba(56, 161, 243, 0.25);
+            --ring-bubble: rgba(56, 161, 243, 0.65);
+            --ring-text: #0284c7;
+        }
+        /* 3. Warm Gold / Yellow */
+        .link-tile:nth-child(10n+3) {
+            --ring-c1: rgba(251, 191, 36, 0.58);
+            --ring-c2: rgba(251, 191, 36, 0.44);
+            --ring-c3: rgba(251, 191, 36, 0.30);
+            --ring-bubble: rgba(251, 191, 36, 0.75);
+            --ring-text: #b45309;
+        }
+        /* 4. Emerald Green */
+        .link-tile:nth-child(10n+4) {
+            --ring-c1: rgba(52, 211, 153, 0.50);
+            --ring-c2: rgba(52, 211, 153, 0.38);
+            --ring-c3: rgba(52, 211, 153, 0.26);
+            --ring-bubble: rgba(52, 211, 153, 0.70);
+            --ring-text: #047857;
+        }
+        /* 5. Deep Violet / Purple */
+        .link-tile:nth-child(10n+5) {
+            --ring-c1: rgba(167, 139, 250, 0.52);
+            --ring-c2: rgba(167, 139, 250, 0.40);
+            --ring-c3: rgba(167, 139, 250, 0.28);
+            --ring-bubble: rgba(167, 139, 250, 0.72);
+            --ring-text: #6d28d9;
+        }
+        /* 6. Vibrant Orange */
+        .link-tile:nth-child(10n+6) {
+            --ring-c1: rgba(251, 146, 60, 0.52);
+            --ring-c2: rgba(251, 146, 60, 0.40);
+            --ring-c3: rgba(251, 146, 60, 0.28);
+            --ring-bubble: rgba(251, 146, 60, 0.72);
+            --ring-text: #c2410c;
+        }
+        /* 7. Bright Pink / Magenta */
+        .link-tile:nth-child(10n+7) {
+            --ring-c1: rgba(244, 114, 182, 0.52);
+            --ring-c2: rgba(244, 114, 182, 0.40);
+            --ring-c3: rgba(244, 114, 182, 0.28);
+            --ring-bubble: rgba(244, 114, 182, 0.72);
+            --ring-text: #be185d;
+        }
+        /* 8. Teal / Cyan */
+        .link-tile:nth-child(10n+8) {
+            --ring-c1: rgba(45, 212, 191, 0.52);
+            --ring-c2: rgba(45, 212, 191, 0.40);
+            --ring-c3: rgba(45, 212, 191, 0.28);
+            --ring-bubble: rgba(45, 212, 191, 0.72);
+            --ring-text: #0f766e;
+        }
+        /* 9. Lime Green */
+        .link-tile:nth-child(10n+9) {
+            --ring-c1: rgba(163, 230, 53, 0.55);
+            --ring-c2: rgba(163, 230, 53, 0.42);
+            --ring-c3: rgba(163, 230, 53, 0.30);
+            --ring-bubble: rgba(163, 230, 53, 0.75);
+            --ring-text: #4d7c0f;
+        }
+        /* 10. Royal Indigo */
+        .link-tile:nth-child(10n+0) {
+            --ring-c1: rgba(129, 140, 248, 0.52);
+            --ring-c2: rgba(129, 140, 248, 0.40);
+            --ring-c3: rgba(129, 140, 248, 0.28);
+            --ring-bubble: rgba(129, 140, 248, 0.72);
+            --ring-text: #1e40af;
+        }
         .link-tile .icon {
-            width: 148px;
-            height: 148px;
+            position: relative;
+            width: 136px;
+            height: 136px;
             border-radius: 50%;
-            background:
-                radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.5), transparent 45%),
-                linear-gradient(135deg, #fde047, #facc15);
-            color: #713f12;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 12px;
+            padding: 16px;
             font-weight: 700;
-            font-size: 1.4rem;
+            font-size: 1.1rem;
             line-height: 1.15;
-            letter-spacing: 0.01em;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
-            border: 4px solid #ffffff;
-            box-shadow: 0 10px 24px -8px rgba(250, 204, 21, 0.5), 0 0 0 1px var(--border);
-            overflow: hidden;
-            transition: box-shadow 0.15s, transform 0.15s, background 0.2s;
+            background: #ffffff;
+            color: var(--ring-text);
+            word-break: break-word;
+            overflow-wrap: anywhere;
+            box-shadow:
+                0 0 0 16px var(--ring-c1),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.9),
+                0 10px 24px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+            z-index: 1;
+            margin: 16px 0;
+        }
+        /* Translucent Overlapping Swirl Ring 2 */
+        .link-tile .icon::before {
+            content: '';
+            position: absolute;
+            top: -24px;
+            left: -18px;
+            right: -14px;
+            bottom: -20px;
+            border-radius: 50%;
+            border: 18px solid var(--ring-c2);
+            clip-path: polygon(0 0, 100% 0, 100% 88%, 0 88%);
+            transform: rotate(-30deg);
+            pointer-events: none;
+            z-index: -1;
+            transition: transform 0.3s ease;
+        }
+        /* Translucent Overlapping Swirl Ring 3 + Bubble Accents */
+        .link-tile .icon::after {
+            content: '';
+            position: absolute;
+            top: -18px;
+            left: -24px;
+            right: -18px;
+            bottom: -24px;
+            border-radius: 50%;
+            border: 18px solid var(--ring-c3);
+            transform: rotate(35deg);
+            pointer-events: none;
+            z-index: -1;
+            transition: transform 0.3s ease;
+            background:
+                radial-gradient(circle at 84% 12%, var(--ring-bubble) 0%, var(--ring-bubble) 13px, transparent 14px),
+                radial-gradient(circle at 93% 26%, var(--ring-bubble) 0%, var(--ring-bubble) 7px, transparent 8px),
+                radial-gradient(circle at 14% 78%, var(--ring-bubble) 0%, var(--ring-bubble) 11px, transparent 12px),
+                radial-gradient(circle at 7% 63%, var(--ring-bubble) 0%, var(--ring-bubble) 6px, transparent 7px);
         }
         .link-tile:hover .icon {
-            transform: scale(1.05);
-            background:
-                radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.5), transparent 45%),
-                linear-gradient(135deg, #86efac, #4ade80);
-            color: #14532d;
-            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.4);
-            box-shadow: 0 16px 30px -8px rgba(74, 222, 128, 0.6), 0 0 0 1px var(--border);
+            transform: scale(1.07);
+            box-shadow:
+                0 0 0 20px var(--ring-c1),
+                inset 0 0 0 2px #ffffff,
+                0 14px 30px rgba(0, 0, 0, 0.12);
         }
-        .link-tile .title { font-size: 0.95rem; font-weight: 600; color: var(--text); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+        .link-tile:hover .icon::before {
+            transform: rotate(-15deg) scale(1.04);
+        }
+        .link-tile:hover .icon::after {
+            transform: rotate(50deg) scale(1.04);
+        }
+        .link-tile .title { font-size: 0.90rem; font-weight: 600; color: var(--text); text-align: center; white-space: normal; word-break: break-word; overflow-wrap: break-word; line-height: 1.3; max-width: 100%; }
         input[type="text"], input[type="password"], input[type="email"] {
             outline: none;
             transition: border-color 0.15s, box-shadow 0.15s;
@@ -117,6 +249,26 @@
         input[type="text"]:focus, input[type="password"]:focus, input[type="email"]:focus {
             border-color: var(--brand) !important;
             box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15);
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width: 1100px) {
+            .dashboard-tiles { grid-template-columns: repeat(4, 1fr); }
+        }
+        @media (max-width: 850px) {
+            .dashboard-tiles { grid-template-columns: repeat(3, 1fr); gap: 16px; row-gap: 28px; }
+            .container { padding: 24px 16px; }
+        }
+        @media (max-width: 640px) {
+            .topbar { flex-direction: column; gap: 12px; text-align: center; padding: 12px 16px; }
+            .topbar .user-info { flex-wrap: wrap; justify-content: center; gap: 10px; }
+            .container { padding: 18px 12px; }
+            .dashboard-tiles { grid-template-columns: repeat(2, 1fr); gap: 14px; row-gap: 24px; }
+            .link-tile .icon { width: 120px; height: 120px; font-size: 1.05rem; }
+        }
+        @media (max-width: 420px) {
+            .dashboard-tiles { grid-template-columns: repeat(1, 1fr); }
+            .link-tile .icon { width: 110px; height: 110px; font-size: 1rem; }
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -143,5 +295,58 @@
         {% endif %}
         {% block content %}{% endblock %}
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const PALETTES = [
+                { c1: 'rgba(239, 68, 68, 0.55)',  c2: 'rgba(239, 68, 68, 0.40)',  c3: 'rgba(239, 68, 68, 0.25)',  bubble: 'rgba(239, 68, 68, 0.80)',  text: '#991b1b' }, // 1. Red
+                { c1: 'rgba(14, 165, 233, 0.55)', c2: 'rgba(14, 165, 233, 0.40)', c3: 'rgba(14, 165, 233, 0.25)', bubble: 'rgba(14, 165, 233, 0.80)', text: '#075985' }, // 2. Sky Blue
+                { c1: 'rgba(34, 197, 94, 0.55)',  c2: 'rgba(34, 197, 94, 0.40)',  c3: 'rgba(34, 197, 94, 0.25)',  bubble: 'rgba(34, 197, 94, 0.80)',  text: '#166534' }, // 3. Green
+                { c1: 'rgba(249, 115, 22, 0.55)', c2: 'rgba(249, 115, 22, 0.40)', c3: 'rgba(249, 115, 22, 0.25)', bubble: 'rgba(249, 115, 22, 0.80)', text: '#9a3412' }, // 4. Orange
+                { c1: 'rgba(168, 85, 247, 0.55)', c2: 'rgba(168, 85, 247, 0.40)', c3: 'rgba(168, 85, 247, 0.25)', bubble: 'rgba(168, 85, 247, 0.80)', text: '#6b21a8' }, // 5. Purple
+                { c1: 'rgba(236, 72, 153, 0.55)', c2: 'rgba(236, 72, 153, 0.40)', c3: 'rgba(236, 72, 153, 0.25)', bubble: 'rgba(236, 72, 153, 0.80)', text: '#9d174d' }, // 6. Pink
+                { c1: 'rgba(20, 184, 166, 0.55)', c2: 'rgba(20, 184, 166, 0.40)', c3: 'rgba(20, 184, 166, 0.25)', bubble: 'rgba(20, 184, 166, 0.80)', text: '#115e59' }, // 7. Teal
+                { c1: 'rgba(234, 179, 8, 0.55)',   c2: 'rgba(234, 179, 8, 0.40)',   c3: 'rgba(234, 179, 8, 0.25)',   bubble: 'rgba(234, 179, 8, 0.80)',   text: '#854d0e' }, // 8. Yellow
+                { c1: 'rgba(99, 102, 241, 0.55)', c2: 'rgba(99, 102, 241, 0.40)', c3: 'rgba(99, 102, 241, 0.25)', bubble: 'rgba(99, 102, 241, 0.80)', text: '#3730a3' }, // 9. Indigo
+                { c1: 'rgba(132, 204, 22, 0.55)', c2: 'rgba(132, 204, 22, 0.40)', c3: 'rgba(132, 204, 22, 0.25)', bubble: 'rgba(132, 204, 22, 0.80)', text: '#3f6212' }, // 10. Lime
+                { c1: 'rgba(244, 63, 94, 0.55)',  c2: 'rgba(244, 63, 94, 0.40)',  c3: 'rgba(244, 63, 94, 0.25)',  bubble: 'rgba(244, 63, 94, 0.80)',  text: '#9f1239' }, // 11. Rose
+                { c1: 'rgba(6, 182, 212, 0.55)',  c2: 'rgba(6, 182, 212, 0.40)',  c3: 'rgba(6, 182, 212, 0.25)',  bubble: 'rgba(6, 182, 212, 0.80)',  text: '#155e75' }, // 12. Cyan
+                { c1: 'rgba(217, 70, 239, 0.55)', c2: 'rgba(217, 70, 239, 0.40)', c3: 'rgba(217, 70, 239, 0.25)', bubble: 'rgba(217, 70, 239, 0.80)', text: '#86198f' }, // 13. Fuchsia
+                { c1: 'rgba(16, 185, 129, 0.55)', c2: 'rgba(16, 185, 129, 0.40)', c3: 'rgba(16, 185, 129, 0.25)', bubble: 'rgba(16, 185, 129, 0.80)', text: '#065f46' }, // 14. Emerald
+                { c1: 'rgba(245, 158, 11, 0.55)', c2: 'rgba(245, 158, 11, 0.40)', c3: 'rgba(245, 158, 11, 0.25)', bubble: 'rgba(245, 158, 11, 0.80)', text: '#78350f' }  // 15. Amber
+            ];
+
+            // Fisher-Yates Random Shuffle on every page refresh
+            const shuffled = [...PALETTES];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            const tiles = document.querySelectorAll('.link-tile');
+            tiles.forEach((tile, index) => {
+                const palette = shuffled[index % shuffled.length];
+                tile.style.setProperty('--ring-c1', palette.c1);
+                tile.style.setProperty('--ring-c2', palette.c2);
+                tile.style.setProperty('--ring-c3', palette.c3);
+                tile.style.setProperty('--ring-bubble', palette.bubble);
+                tile.style.setProperty('--ring-text', palette.text);
+
+                // Auto-scale font size inside circle icon for long names
+                const icon = tile.querySelector('.icon');
+                if (icon) {
+                    const textLength = icon.textContent.trim().length;
+                    if (textLength > 20) {
+                        icon.style.fontSize = '0.85rem';
+                    } else if (textLength > 15) {
+                        icon.style.fontSize = '0.95rem';
+                    } else if (textLength > 10) {
+                        icon.style.fontSize = '1.05rem';
+                    } else {
+                        icon.style.fontSize = '1.15rem';
+                    }
+                }
+            });
+        });
+    </script>
 </body>
 </html>
