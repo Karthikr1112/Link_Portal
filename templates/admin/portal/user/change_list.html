@@ -1,0 +1,36 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block date_hierarchy %}
+    {{ block.super }}
+    <div class="col-12 pb-3">
+        <div class="card card-outline card-primary shadow-sm" style="border-radius: 10px; border-left: 4px solid #0284c7; background: #ffffff;">
+            <div class="card-body p-3">
+                <form method="post" action="{% url 'admin:portal_user_bulk_set_policy' %}" class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    {% csrf_token %}
+                    <div class="d-flex flex-wrap align-items-center" style="gap: 12px;">
+                        <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">
+                            <i class="fas fa-user-clock text-primary mr-1"></i> Inactivity Policy for ALL Users:
+                        </span>
+                        <select name="policy" class="form-control form-control-sm" style="width: auto; min-width: 190px; display: inline-block; font-weight: 500;">
+                            <option value="none">No Deactivation</option>
+                            <option value="7_days">1 Week (7 Days)</option>
+                            <option value="10_days">10 Days</option>
+                        </select>
+                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Are you sure you want to apply this deactivation policy to ALL users?');">
+                            <i class="fas fa-check-circle mr-1"></i> Apply to All Users
+                        </button>
+                    </div>
+                    <div class="d-flex align-items-center" style="gap: 8px;">
+                        <span class="text-muted small d-none d-md-inline mr-2">
+                            <i class="fas fa-info-circle mr-1"></i> Inactive accounts auto-deactivate &amp; require manual activation.
+                        </span>
+                        <a href="{% url 'admin:portal_user_run_inactivity_check' %}" class="btn btn-sm btn-outline-secondary" title="Manually scan and deactivate accounts that exceeded policy">
+                            <i class="fas fa-sync-alt mr-1"></i> Run Inactivity Check
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}

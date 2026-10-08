@@ -1,11 +1,19 @@
 from itertools import groupby
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.core.paginator import Paginator
 from django.db.models import Prefetch, Q
 from django.views.generic import TemplateView
 
+from .forms import PortalAuthenticationForm
 from .models import Category, Link
+
+
+class PortalLoginView(LoginView):
+    template_name = "portal/login.html"
+    authentication_form = PortalAuthenticationForm
+
 
 
 class DashboardView(LoginRequiredMixin, TemplateView):
