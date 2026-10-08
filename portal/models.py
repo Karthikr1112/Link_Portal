@@ -37,12 +37,41 @@ class Store(models.Model):
         return self.name
 
 
-class User(AbstractUser):
-    class InactivityPolicy(models.TextChoices):
-        NEVER = "none", "No Deactivation"
-        ONE_WEEK = "7_days", "1 Week"
-        TEN_DAYS = "10_days", "10 Days"
+class InactivityPeriod(models.Model):
+    name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Optional label (e.g. '1 Day', '1 Week'). If blank, will default to '[X] Days'.",
+    )
+    days = models.PositiveIntegerField(
+        unique=True,
+        help_text="Number of days of inactivity before automatic deactivation (e.g., 1, 2, 3, 7, 10).",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="Whether this period option is active and available in selection dropdowns.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["days"]
+        verbose_name = "Inactivity Period"
+        verbose_name_plural = "Inactivity Periods"
+
+    def save(self, *args, **kwargs):
+        if not self.name:
+            suffix = "Day" if self.days == 1 else "Days"
+            self.name = f"{self.days} {suffix}"
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        suffix = "Day" if self.days == 1 else "Days"
+        if self.name and self.name != f"{self.days} {suffix}":
+            return f"{self.name} ({self.days} {suffix})"
+        return self.name or f"{self.days} {suffix}"
+
+
+class User(AbstractUser):
     categories = models.ManyToManyField(
         Category,
         related_name="users",
@@ -54,12 +83,14 @@ class User(AbstractUser):
         related_name="users",
         blank=True,
     )
-    inactivity_policy = models.CharField(
-        max_length=20,
-        choices=InactivityPolicy.choices,
-        default=InactivityPolicy.NEVER,
-        verbose_name="Deactivation Policy",
-        help_text="Automatically deactivate the account if not logged in for this duration.",
+    inactivity_period = models.ForeignKey(
+        InactivityPeriod,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="users",
+        verbose_name="Inactivity Period",
+        help_text="Select an inactivity option, or leave empty for No Deactivation.",
     )
     last_activated_at = models.DateTimeField(
         null=True,
@@ -71,7 +102,6 @@ class User(AbstractUser):
     class Meta:
         indexes = [
             models.Index(fields=["is_active"]),
-            models.Index(fields=["inactivity_policy"]),
         ]
 
     def __str__(self):
@@ -79,10 +109,8 @@ class User(AbstractUser):
 
     def get_inactivity_threshold_days(self):
         """Returns the number of days allowed for inactivity before deactivation."""
-        if self.inactivity_policy == self.InactivityPolicy.ONE_WEEK:
-            return 7
-        elif self.inactivity_policy == self.InactivityPolicy.TEN_DAYS:
-            return 10
+        if self.inactivity_period and self.inactivity_period.is_active:
+            return self.inactivity_period.days
         return None
 
     @property

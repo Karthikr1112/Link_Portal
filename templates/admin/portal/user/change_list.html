@@ -1,6 +1,49 @@
 {% extends "admin/change_list.html" %}
 {% load i18n %}
 
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Hide the ugly add/edit/delete/view icons in the user table */
+        .field-inactivity_period .related-widget-wrapper-link,
+        .field-inactivity_period a.related-widget-wrapper-link,
+        .field-inactivity_period .change-related,
+        .field-inactivity_period .add-related,
+        .field-inactivity_period .delete-related,
+        .field-inactivity_period .view-related {
+            display: none !important;
+        }
+
+        /* Clean, wide dropdown for Inactivity Period */
+        .field-inactivity_period select,
+        td.field-inactivity_period select,
+        td.field-inactivity_period .related-widget-wrapper select {
+            min-width: 160px !important;
+            width: auto !important;
+            padding: 5px 10px !important;
+            border-radius: 6px !important;
+            border: 1px solid #cbd5e1 !important;
+            background-color: #ffffff !important;
+            font-size: 0.86rem !important;
+            color: #1e293b !important;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        td.field-inactivity_period select:focus {
+            border-color: #0284c7 !important;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+        }
+
+        td.field-inactivity_period .related-widget-wrapper {
+            display: inline-block !important;
+            width: auto !important;
+            margin: 0 !important;
+        }
+    </style>
+{% endblock %}
+
 {% block date_hierarchy %}
     {{ block.super }}
     <div class="col-12 pb-3">
@@ -10,21 +53,22 @@
                     {% csrf_token %}
                     <div class="d-flex flex-wrap align-items-center" style="gap: 12px;">
                         <span class="font-weight-bold text-dark" style="font-size: 0.95rem;">
-                            <i class="fas fa-user-clock text-primary mr-1"></i> Inactivity Policy for ALL Users:
+                            <i class="fas fa-user-clock text-primary mr-1"></i> Inactivity Period for ALL Users:
                         </span>
-                        <select name="policy" class="form-control form-control-sm" style="width: auto; min-width: 190px; display: inline-block; font-weight: 500;">
-                            <option value="none">No Deactivation</option>
-                            <option value="7_days">1 Week (7 Days)</option>
-                            <option value="10_days">10 Days</option>
+                        <select name="period_id" class="form-control form-control-sm" style="width: auto; min-width: 200px; display: inline-block; font-weight: 500;">
+                            <option value="">No Deactivation</option>
+                            {% for p in available_periods %}
+                            <option value="{{ p.id }}">{{ p }}</option>
+                            {% endfor %}
                         </select>
-                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Are you sure you want to apply this deactivation policy to ALL users?');">
+                        <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('Are you sure you want to apply this inactivity period to ALL users?');">
                             <i class="fas fa-check-circle mr-1"></i> Apply to All Users
                         </button>
                     </div>
                     <div class="d-flex align-items-center" style="gap: 8px;">
-                        <span class="text-muted small d-none d-md-inline mr-2">
-                            <i class="fas fa-info-circle mr-1"></i> Inactive accounts auto-deactivate &amp; require manual activation.
-                        </span>
+                        <a href="{% url 'admin:portal_inactivityperiod_changelist' %}" class="btn btn-sm btn-outline-info" title="Add or edit days in the separate Inactivity Periods table">
+                            <i class="fas fa-plus-circle mr-1"></i> Manage Periods (Add Days)
+                        </a>
                         <a href="{% url 'admin:portal_user_run_inactivity_check' %}" class="btn btn-sm btn-outline-secondary" title="Manually scan and deactivate accounts that exceeded policy">
                             <i class="fas fa-sync-alt mr-1"></i> Run Inactivity Check
                         </a>

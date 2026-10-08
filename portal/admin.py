@@ -5,8 +5,19 @@ from django.urls import path
 from django.utils import timezone
 from django.utils.html import format_html
 
-from .models import Category, Link, Store, User
+from .models import Category, InactivityPeriod, Link, Store, User
 from .services import check_and_deactivate_inactive_users
+
+
+@admin.register(InactivityPeriod)
+class InactivityPeriodAdmin(admin.ModelAdmin):
+    list_display = ("name", "days", "is_active", "user_count", "created_at")
+    list_editable = ("days", "is_active")
+    list_filter = ("is_active",)
+    search_fields = ("name",)
+
+    def user_count(self, obj):
+        return obj.users.count()
 
 
 @admin.register(Category)
@@ -64,16 +75,16 @@ class LinkAdmin(admin.ModelAdmin):
 class PortalUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
         (
-            "Inactivity & Account Deactivation Policy",
+            "Inactivity & Account Deactivation",
             {
-                "fields": ("inactivity_policy", "last_activated_at"),
-                "description": "Configure automatic account deactivation when the user does not log in.",
+                "fields": ("inactivity_period", "last_activated_at"),
+                "description": "Configure automatic account deactivation based on inactivity.",
             },
         ),
         ("Categories & Stores", {"fields": ("categories", "stores")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("Inactivity Policy", {"fields": ("inactivity_policy",)}),
+        ("Inactivity Period", {"fields": ("inactivity_period",)}),
         ("Categories & Stores", {"fields": ("categories", "stores")}),
     )
     readonly_fields = UserAdmin.readonly_fields + ("last_activated_at",)
@@ -82,34 +93,44 @@ class PortalUserAdmin(UserAdmin):
         "username",
         "email",
         "is_active",
-        "inactivity_policy",
+        "inactivity_period",
         "inactivity_status",
         "last_login",
         "is_staff",
         "category_list",
         "store_list",
     )
-    list_editable = ("is_active", "inactivity_policy")
-    list_filter = UserAdmin.list_filter + ("inactivity_policy", "categories", "stores")
+    list_editable = ("is_active", "inactivity_period")
+    list_filter = UserAdmin.list_filter + ("inactivity_period", "categories", "stores")
 
     actions = [
         "activate_users",
         "deactivate_users",
-        "set_policy_none",
-        "set_policy_7_days",
-        "set_policy_10_days",
-        "apply_all_policy_none",
-        "apply_all_policy_7_days",
-        "apply_all_policy_10_days",
+        "set_period_none",
+        "apply_all_period_none",
         "run_inactivity_check_action",
     ]
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "inactivity_period":
+            kwargs["queryset"] = InactivityPeriod.objects.filter(is_active=True).order_by("days")
+            kwargs["empty_label"] = "No Deactivation"
+            formfield = super().formfield_for_foreignkey(db_field, request, **kwargs)
+            if formfield and hasattr(formfield, "widget"):
+                formfield.widget.can_add_related = False
+                formfield.widget.can_change_related = False
+                formfield.widget.can_delete_related = False
+                formfield.widget.can_view_related = False
+            return formfield
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def get_queryset(self, request):
-        return super().get_queryset(request).prefetch_related("categories", "stores")
+        return super().get_queryset(request).prefetch_related("categories", "stores").select_related("inactivity_period")
 
     def changelist_view(self, request, extra_context=None):
-        # Automatically update any users who exceeded their inactivity policy threshold
         check_and_deactivate_inactive_users()
+        extra_context = extra_context or {}
+        extra_context["available_periods"] = InactivityPeriod.objects.filter(is_active=True).order_by("days")
         return super().changelist_view(request, extra_context=extra_context)
 
     def get_urls(self):
@@ -130,20 +151,21 @@ class PortalUserAdmin(UserAdmin):
 
     def bulk_set_policy_view(self, request):
         if request.method == "POST":
-            policy = request.POST.get("policy")
-            valid_policies = dict(User.InactivityPolicy.choices)
-            if policy in valid_policies:
-                count = User.objects.filter(is_superuser=False).update(
-                    inactivity_policy=policy
-                )
-                label = valid_policies[policy]
-                deactivated = check_and_deactivate_inactive_users()
-                msg = f"Inactivity policy updated to '{label}' for all {count} regular user(s)."
-                if deactivated:
-                    msg += f" {deactivated} inactive user(s) were automatically deactivated."
-                self.message_user(request, msg, level=messages.SUCCESS)
+            period_id = request.POST.get("period_id")
+            if period_id:
+                try:
+                    period = InactivityPeriod.objects.get(pk=period_id)
+                    count = User.objects.filter(is_superuser=False).update(inactivity_period=period)
+                    deactivated = check_and_deactivate_inactive_users()
+                    msg = f"Inactivity period updated to '{period}' for all {count} regular user(s)."
+                    if deactivated:
+                        msg += f" {deactivated} inactive user(s) were automatically deactivated."
+                    self.message_user(request, msg, level=messages.SUCCESS)
+                except InactivityPeriod.DoesNotExist:
+                    self.message_user(request, "Selected period does not exist.", level=messages.ERROR)
             else:
-                self.message_user(request, "Invalid policy selected.", level=messages.ERROR)
+                count = User.objects.filter(is_superuser=False).update(inactivity_period=None)
+                self.message_user(request, f"Set to 'No Deactivation' for all {count} regular user(s).", level=messages.SUCCESS)
         return redirect("admin:portal_user_changelist")
 
     def run_inactivity_check_view(self, request):
@@ -172,7 +194,7 @@ class PortalUserAdmin(UserAdmin):
         threshold = obj.get_inactivity_threshold_days()
         days = obj.days_inactive
 
-        if obj.inactivity_policy == User.InactivityPolicy.NEVER:
+        if not threshold:
             return format_html(
                 '<span class="badge" style="background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; padding:4px 8px; border-radius:4px;">No Deactivation ({}d inactive)</span>',
                 days,
@@ -222,57 +244,15 @@ class PortalUserAdmin(UserAdmin):
         count = queryset.filter(is_superuser=False).update(is_active=False)
         self.message_user(request, f"{count} user(s) deactivated.", level=messages.INFO)
 
-    @admin.action(description="Set policy: No Deactivation (Selected users)")
-    def set_policy_none(self, request, queryset):
-        count = queryset.update(inactivity_policy=User.InactivityPolicy.NEVER)
-        self.message_user(request, f"Set policy to 'No Deactivation' for {count} user(s).", level=messages.SUCCESS)
-
-    @admin.action(description="Set policy: 1 Week / 7 Days (Selected users)")
-    def set_policy_7_days(self, request, queryset):
-        count = queryset.update(inactivity_policy=User.InactivityPolicy.ONE_WEEK)
-        deactivated = check_and_deactivate_inactive_users()
-        msg = f"Set policy to '1 Week (7 Days)' for {count} user(s)."
-        if deactivated:
-            msg += f" {deactivated} user(s) were deactivated due to inactivity."
-        self.message_user(request, msg, level=messages.SUCCESS)
-
-    @admin.action(description="Set policy: 10 Days (Selected users)")
-    def set_policy_10_days(self, request, queryset):
-        count = queryset.update(inactivity_policy=User.InactivityPolicy.TEN_DAYS)
-        deactivated = check_and_deactivate_inactive_users()
-        msg = f"Set policy to '10 Days' for {count} user(s)."
-        if deactivated:
-            msg += f" {deactivated} user(s) were deactivated due to inactivity."
-        self.message_user(request, msg, level=messages.SUCCESS)
+    @admin.action(description="Set to No Deactivation (Selected users)")
+    def set_period_none(self, request, queryset):
+        count = queryset.update(inactivity_period=None)
+        self.message_user(request, f"Set to 'No Deactivation' for {count} user(s).", level=messages.SUCCESS)
 
     @admin.action(description="Apply to ALL users: No Deactivation")
-    def apply_all_policy_none(self, request, queryset):
-        count = User.objects.filter(is_superuser=False).update(
-            inactivity_policy=User.InactivityPolicy.NEVER
-        )
-        self.message_user(request, f"Applied 'No Deactivation' policy to all {count} user(s).", level=messages.SUCCESS)
-
-    @admin.action(description="Apply to ALL users: 1 Week (7 Days)")
-    def apply_all_policy_7_days(self, request, queryset):
-        count = User.objects.filter(is_superuser=False).update(
-            inactivity_policy=User.InactivityPolicy.ONE_WEEK
-        )
-        deactivated = check_and_deactivate_inactive_users()
-        msg = f"Applied '1 Week (7 Days)' policy to all {count} regular user(s)."
-        if deactivated:
-            msg += f" {deactivated} user(s) were automatically deactivated."
-        self.message_user(request, msg, level=messages.SUCCESS)
-
-    @admin.action(description="Apply to ALL users: 10 Days")
-    def apply_all_policy_10_days(self, request, queryset):
-        count = User.objects.filter(is_superuser=False).update(
-            inactivity_policy=User.InactivityPolicy.TEN_DAYS
-        )
-        deactivated = check_and_deactivate_inactive_users()
-        msg = f"Applied '10 Days' policy to all {count} regular user(s)."
-        if deactivated:
-            msg += f" {deactivated} user(s) were automatically deactivated."
-        self.message_user(request, msg, level=messages.SUCCESS)
+    def apply_all_period_none(self, request, queryset):
+        count = User.objects.filter(is_superuser=False).update(inactivity_period=None)
+        self.message_user(request, f"Applied 'No Deactivation' to all {count} regular user(s).", level=messages.SUCCESS)
 
     @admin.action(description="Run inactivity check now")
     def run_inactivity_check_action(self, request, queryset):
@@ -282,4 +262,3 @@ class PortalUserAdmin(UserAdmin):
             f"Inactivity check executed. {deactivated} user(s) deactivated.",
             level=messages.INFO,
         )
-
